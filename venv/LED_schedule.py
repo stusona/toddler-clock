@@ -9,38 +9,48 @@ import board
 from time import sleep
 import datetime
 import pytz
+import tzlocal
 
 led_pin = board.D18 # LED GPIO number
 led_num = 15 # number of LEDs
-led_pow = 0.05 # 0-1 power for LEDs
+led_pow = 0.03 # 0-1 power for LEDs
 ORDER = neopixel.GRB
 ledstrip = neopixel.NeoPixel(
-	led_pin, led_num, brightness=led_pow, auto_write=True, pixel_order=ORDER
+	led_pin, led_num, brightness=led_pow, auto_write=False, pixel_order=ORDER
 )
 
 red = (255,0,0)
 grn = (0,255,0)
 blu = (0,0,255)
 
-ALARM_HOUR = 20; ALARM_MINUTE = 12 # time when the clock hits "zero" each morning
-COUNTDOWN_TIME = 30 # Number of minutes to countdown
+ALARM_HOUR = 22; ALARM_MINUTE = 25 # time when the clock hits "zero" each morning
+COUNTDOWN_TIME = 30*60 # Number of seconds to count down and change LEDs
 
-utc = pytz.utc # convenient timezone
-pst = pytz.timezone('America/Los_Angeles')
+tz = pytz.timezone('America/Los_Angeles')
+dt = tz.localize(datetime.datetime.now()) # get current time
+target_time = dt.replace(hour=ALARM_HOUR, minute=ALARM_MINUTE, second=0)
 fmt = '%Y-%m-%d %H:%M:%S' # format for printing timestamp
 
 while True:
-	utc_dt = datetime.datetime.now().replace(tzinfo=utc) # get current time
-	print(f"UTC time: {utc_dt.striftime(fmt)}")
-	pst_dt = utc_dt.astimezone(pst) # convert time to PST
-	print("PST time: {}".format(pst_dt.strftime(fmt)))
+    dt = tz.localize(datetime.datetime.now()) # get current time
+    print("Current time: {}".format(dt.strftime(fmt)))
 
-	target_time = pst_dt.replace(hour=ALARM_HOUR, minute=ALARM_MINUTE)
-	if(pst_dt < target_time):
-		print("Waiting")
-		countdown = target_time - pst_dt
-		print(countdown.seconds)
-		ledstrip.fill(red)
-	else:
-		ledstrip.fill(blu)
-	sleep(2)
+    if(dt < target_time):
+        print("Waiting")
+        countdown = (target_time - dt).total_seconds()
+        print(countdown)
+        ledstrip.fill(red)
+        if(countdown<COUNTDOWN_TIME):
+            green_leds = (1.0-(countdown/COUNTDOWN_TIME))*led_num
+            trans_percentage = green_leds - int(green_leds)
+            green_leds = int(green_leds)
+            print(green_leds)
+            for i in range(green_leds):
+                ledstrip[i] = grn
+            trans_grn = int(255*trans_percentage)
+            trans_red = int(255*(1-trans_percentage))
+            ledstrip[green_leds+1] = (trans_red, trans_grn, 0)
+            ledstrip.show()
+    else:
+        ledstrip.fill(blu)
+    sleep(2)
