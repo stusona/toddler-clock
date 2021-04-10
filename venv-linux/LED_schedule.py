@@ -14,8 +14,8 @@ import numpy
 
 sleep_time = 1
 
-MORNING_HOUR = 17; MORNING_MINUTE = 30 # time when the clock hits "zero" each morning
-BEDTIME_HOUR = 20; BEDTIME_MINUTE = 15 # time when clock goes back to red
+MORNING_HOUR = 7; MORNING_MINUTE = 0 # time when the clock hits "zero" each morning
+BEDTIME_HOUR = 20; BEDTIME_MINUTE = 40 # time when clock goes back to red
 COUNTDOWN_TIME = 30*60 # Number of seconds to count down and change LEDs
 
 led_pow = 0.03 # 0-1 power for LEDs
@@ -41,15 +41,13 @@ def main():
     try:
         while True:
             dt = tz.localize(datetime.datetime.now()) # get current time
-            print("Current time: {}".format(dt.strftime(fmt)))
+#            print("Current time: {}".format(dt.strftime(fmt)))
 
             if(dt < morning_time): # Before morning alarm
                 seconds_left = (morning_time - dt).total_seconds()
                 if(seconds_left<COUNTDOWN_TIME): # we're in countdown mode
                     LED_countdown(red, grn, seconds_left)
-                    print("LEDs are transitioning from red to green")
-                else:
-                    print("LEDs are red") # it's after midnight, but before countdown mode
+                else: # it's after midnight, but before countdown mode
                     ledstrip.fill(red)
                     ledstrip.show()
 
@@ -57,7 +55,6 @@ def main():
                 seconds_left = (bed_time - dt).total_seconds()
                 if(seconds_left<COUNTDOWN_TIME): # we're in countdown mode
                     LED_countdown(blu, red, seconds_left)
-                    print("LEDs are transitioning from blue to red")
                 else: # it's after morning, but not bedtime countdown yet
                     ledstrip.fill(blu)
                     ledstrip.show()
