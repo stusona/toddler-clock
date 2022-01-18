@@ -12,10 +12,10 @@ import threading
 
 
 #MORNING_TIME = "06:30" # time to start counting down each morning
-MORNING_TIME = "06:30" # time to start counting down each morning
-WAKEUP_TIME = "07:00" # time to turn blue
-BED_TIME = "18:30" # time when clock goes back to red
-COUNTDOWN_TIME = 1*60 # Number of seconds to count down and change LEDs
+MORNING_TIME = "06:00" # time to start counting down each morning
+WAKEUP_TIME = "06:30" # time to turn blue
+BED_TIME = "18:45" # time when clock goes back to red
+COUNTDOWN_TIME = 30*60 # Number of seconds to count down and change LEDs
 
 led_pow = 0.03 # 0-1 power for LEDs
 led_pin = board.D18 # LED GPIO number
@@ -36,7 +36,7 @@ def main():
         ledstrip.show()
         print("LEDs red")
         schedule.every().day.at(MORNING_TIME).do(run_threaded, morning_countdown)
-        schedule.every().day.at(WAKEUP_TIME).do(ledstrip.fill, blu)
+        schedule.every().day.at(WAKEUP_TIME).do(LED_blu)
         schedule.every().day.at(BED_TIME).do(run_threaded, bedtime_countdown)
 
         while True:
@@ -69,6 +69,10 @@ def LED_countdown(color_old, color_new, seconds, led_num):
         sleep(time_interval)
         ledstrip[i] = color_new
         ledstrip.show()
+
+def LED_blu():
+    ledstrip.fill(blu)
+    ledstrip.show()
 
 def LED_off():
     ledstrip.fill((0,0,0))

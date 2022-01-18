@@ -77,13 +77,13 @@ def LED_countdown(color_old, color_new, seconds_left):
     for i in range(new_led_count): # set new color for LEDs up to transition point
         ledstrip[i] = color_new
 
-    trans_old = tuple(numpy.multiply((1-transition), color_old))
-    trans_new = tuple(numpy.multiply(transition, color_old))
+    trans_old = numpy.multiply((1-transition), color_old)
+    trans_new = numpy.multiply(transition, color_new)
     color = numpy.add(trans_old, trans_new)
     ledstrip[new_led_count] = (int(color[0]), int(color[1]), int(color[2]))
 
     # ensure rest of strip is still old color
-    for i in range(new_led_count,led_num):
+    for i in range(new_led_count+1,led_num):
         ledstrip[i]= color_old
     ledstrip.show()
 
