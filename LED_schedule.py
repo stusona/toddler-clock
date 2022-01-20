@@ -9,15 +9,15 @@ import board
 from time import sleep
 import schedule
 import threading
-
+from datetime import datetime, time
 
 #MORNING_TIME = "06:30" # time to start counting down each morning
-MORNING_TIME = "06:00" # time to start counting down each morning
-WAKEUP_TIME = "06:30" # time to turn blue
-BED_TIME = "18:45" # time when clock goes back to red
-COUNTDOWN_TIME = 30*60 # Number of seconds to count down and change LEDs
+MORNING_TIME = datetime.strptime('0600', "%H%M") # time to start counting down each morning
+WAKEUP_TIME = datetime.strptime('0630', "%H%M") # time to turn green
+BED_TIME = datetime.strptime('1845', "%H%M")  # time when clock goes back to red
+COUNTDOWN_TIME = (WAKEUP_TIME-MORNING_TIME).total_seconds() # Number of seconds to count down and change LEDs
 
-led_pow = 0.03 # 0-1 power for LEDs
+led_pow = 0.02 # 0-1 power for LEDs
 led_pin = board.D18 # LED GPIO number
 led_num = 15 # number of LEDs
 ORDER = neopixel.GRB
@@ -28,16 +28,18 @@ ledstrip = neopixel.NeoPixel(
 red = (255,0,0)
 grn = (0,255,0)
 blu = (0,0,255)
-yel = (255,255,0)
+yel = (255,225,0)
 
 def main():
     try:
-        ledstrip.fill(red)
-        ledstrip.show()
-        print("LEDs red")
-        schedule.every().day.at(MORNING_TIME).do(run_threaded, morning_countdown)
-        schedule.every().day.at(WAKEUP_TIME).do(LED_blu)
-        schedule.every().day.at(BED_TIME).do(run_threaded, bedtime_countdown)
+        if(WAKEUP_TIME.time() <= datetime.now().time() <= BED_TIME.time()):
+            LED_grn()
+        else:
+            LED_red()
+
+        schedule.every().day.at(MORNING_TIME.strftime("%H:%M")).do(run_threaded, morning_countdown)
+        schedule.every().day.at(WAKEUP_TIME.strftime("%H:%M")).do(LED_blu)
+        schedule.every().day.at(BED_TIME.strftime("%H:%M")).do(run_threaded, bedtime_countdown)
 
         while True:
             schedule.run_pending()
@@ -55,7 +57,7 @@ def morning_countdown():
     LED_countdown(red, grn, COUNTDOWN_TIME, led_num)
 
 def bedtime_countdown():
-    LED_countdown(blu, red, COUNTDOWN_TIME, led_num)
+    LED_countdown(grn, red, COUNTDOWN_TIME, led_num)
 
 def LED_countdown(color_old, color_new, seconds, led_num):
     # take in old color, new color, and seconds to do countdown
@@ -70,13 +72,25 @@ def LED_countdown(color_old, color_new, seconds, led_num):
         ledstrip[i] = color_new
         ledstrip.show()
 
+def LED_red():
+    ledstrip.fill(red)
+    ledstrip.show()
+    print("LEDs red")
+
+def LED_grn():
+    ledstrip.fill(grn)
+    ledstrip.show()
+    print("LEDs grn")
+
 def LED_blu():
     ledstrip.fill(blu)
     ledstrip.show()
+    print("LEDs blu")
 
 def LED_off():
     ledstrip.fill((0,0,0))
     ledstrip.show()
+    print("LEDs off")
 
 if __name__ == '__main__':
     main()
