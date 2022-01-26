@@ -14,7 +14,7 @@ from datetime import datetime, time
 #MORNING_TIME = "06:30" # time to start counting down each morning
 MORNING_TIME = datetime.strptime('0600', "%H%M") # time to start counting down each morning
 WAKEUP_TIME = datetime.strptime('0630', "%H%M") # time to turn green
-BED_TIME = datetime.strptime('1915', "%H%M")  # time when clock goes back to red
+BED_TIME = datetime.strptime('1845', "%H%M")  # time when clock goes back to red
 COUNTDOWN_TIME = (WAKEUP_TIME-MORNING_TIME).total_seconds()-1 # Number of seconds to count down and change LEDs
 
 led_pow = 0.02 # 0-1 power for LEDs
